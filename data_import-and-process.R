@@ -54,6 +54,18 @@ lucinid_data = lucinid_data %>% janitor::clean_names() %>%
   select(-date, -location_site) %>%  # these variables are already in the site_data df
   rename(transect_distance_m = core_distance,
          transect_position = above_below_seagrass_edge,
-         lucinid_length_mm = length_mm)
+         lucinid_length_mm = length_mm) %>%
+  # fix spelling in transect ID's
+  mutate(transect_id = str_replace_all(transect_id, "Above", "above"),
+         transect_id = str_replace_all(transect_id, "Below", "below"))
+
+
+# combine site, core, and seagrass data
+df = site_data %>%
+  select(date, site_location, transect_id, depth_m, erosion_edge_height_m, transect_position) %>%
+  right_join(core_data %>% select(-core_id, -transect_position)) %>%
+  left_join(sg_density %>% select(transect_id:cover_algal_tot))
+
+
 
 
