@@ -27,7 +27,7 @@ lucinid_data = read_xlsx(path = "C:/Users/rajohnson6/Box/Turks & Caicos/Seagrass
 
 # clean up column names
 site_data = site_data %>% janitor::clean_names() %>%
-  rename(erosion_edge_height_m = vertical_height_of_erosion_edge_m) %>%
+  rename(erosion_height_m = vertical_height_of_erosion_edge_m) %>%
   # add transect position column
   mutate(transect_position = str_sub(transect_id, start=-5))
 
@@ -47,8 +47,8 @@ sg_density = sg_density %>% janitor::clean_names() %>%
 core_data = core_data %>% janitor::clean_names() %>% 
   rename(transect_distance_m = core_distance,
          transect_position = above_below_seagrass_edge,
-         live_lucinid_num = number_of_live_lucinids,
-         dead_lucinid_num = number_of_dead_lucinids)
+         live_lucinids = number_of_live_lucinids,
+         dead_lucinids = number_of_dead_lucinids)
 
 lucinid_data = lucinid_data %>% janitor::clean_names() %>%
   select(-date, -location_site) %>%  # these variables are already in the site_data df
@@ -62,9 +62,10 @@ lucinid_data = lucinid_data %>% janitor::clean_names() %>%
 
 # combine site, core, and seagrass data
 df = site_data %>%
-  select(date, site_location, transect_id, depth_m, erosion_edge_height_m, transect_position) %>%
+  select(date, site_location, transect_id, depth_m, erosion_height_m, transect_position) %>%
   right_join(core_data %>% select(-core_id, -transect_position)) %>%
-  left_join(sg_density %>% select(transect_id:cover_algal_tot))
+  full_join(sg_density %>% select(transect_id:cover_algal_tot) %>%
+              left_join(site_data %>% select(date, site_location, transect_id, depth_m, erosion_height_m, transect_position)))
 
 
 
